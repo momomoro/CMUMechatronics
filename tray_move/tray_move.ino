@@ -1,4 +1,8 @@
-
+// Will Milner
+// Team L Nothing to Flux With 
+//
+// AccelStepper Library for arduino is needed to run this code
+//
 // Copyright (C) 2012 Mike McCauley
 // $Id: Random.pde,v 1.1 2011/01/05 01:51:01 mikem Exp mikem $
 
