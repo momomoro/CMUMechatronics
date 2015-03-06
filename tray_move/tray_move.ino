@@ -27,7 +27,7 @@ void loop()
     for(int j = 0; j < 5; j++) {
       //part acknowledged 
       if (gateSensor) {
-        stepper.moveTo(j*5 + 5); //need to play with this number
+        stepper.moveTo(100 - j*18); //need to play with this number
       }
       stepper.run();
       //move arm back to home
