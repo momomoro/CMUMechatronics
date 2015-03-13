@@ -13,8 +13,8 @@
 
 Pixy pixy;
 const int numReadings = 10;
-const int LEFT_THRESHOLD = 36;
-const int RIGHT_THRESHOLD = 38;
+const int LEFT_THRESHOLD = 40;
+const int RIGHT_THRESHOLD = 40;
 
 int greenAverage = 0;
 int greenReadings[numReadings];
@@ -60,12 +60,12 @@ void loop()
         sprintf(buf, "  block %d: ", j);
         Serial.print(buf); 
         pixy.blocks[j].print();
-        if(pixy.blocks[j].signature == 2) 
+        if(pixy.blocks[j].signature == 1) 
         {
           //turnMotorRight
           greenIndex = j;
         }
-        else if(pixy.blocks[j].signature == 1)
+        else if(pixy.blocks[j].signature == 2)
         {
           //turnMotorLeft
           yellowIndex = j;

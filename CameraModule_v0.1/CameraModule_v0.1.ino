@@ -5,7 +5,11 @@
 //cam variables
 int camGo = 0;
 Pixy pixy;
+const int GREEN_SIG = 1;
+const int YELLOW_SIG = 2;
+
 const int NUM_READINGS = 6;
+const int MAX_READINGS = 20;
 const int LEFT_THRESHOLD = 39;
 const int RIGHT_THRESHOLD = 43;
 
@@ -68,7 +72,8 @@ void loop() {
       // frame would bog down the Arduino
       if (i%30==0)
       {
-        if(refreshCount <= NUM_READINGS) {
+        if(refreshCount <= NUM_READINGS &&
+        refreshCount <= MAX_READINGS) {
           refreshCount += 1;
           sprintf(buf, "Detected %d:\n", blocks);
           Serial.print(buf);
@@ -77,11 +82,11 @@ void loop() {
             sprintf(buf, "  block %d: ", j);
             Serial.print(buf); 
             pixy.blocks[j].print();
-            if(pixy.blocks[j].signature == 2) 
+            if(pixy.blocks[j].signature == GREEN_SIG) 
             {
               greenIndex = j;
             }
-            else if(pixy.blocks[j].signature == 1)
+            else if(pixy.blocks[j].signature == YELLOW_SIG)
             {
               yellowIndex = j;
             }

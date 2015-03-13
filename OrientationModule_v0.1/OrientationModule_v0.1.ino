@@ -2,10 +2,16 @@
 #include <Wire.h>
 
 //pins
-int gatePin = 8;
+int gatePin = A0;
 int servoPin = 5;
 int stepPin = 6;
 int dirPin = 7;
+int commOutPin = 8;
+int commInPin = 9;
+int commErrPin = 4;
+
+//gate vars
+int GATE_THRESHOLD = 10;
 
 //cam vars
 int camGo = 0;
@@ -46,7 +52,8 @@ int SERVO_REST = 90;
 void setup(){
   pinMode(gatePin, INPUT);
   pinMode(stepPin, OUTPUT);
-  pinMode(gatePin, INPUT);
+  pinMode(commOutPin, OUTPUT);
+  pinMode(commInPin, INPUT);
   pinMode(dirPin, OUTPUT);
   Wire.begin();
 
@@ -74,6 +81,7 @@ void loop(){
     //wait for module not busy
     //Serial.println("Loop Start");
     if(dispenserReady) {
+      delay(500);
       //set module busy
       Serial.println("Dispenser Ready. Stepper GO!");
       dispenserReady = 0;
@@ -101,12 +109,15 @@ void loop(){
     //scanning and orientation
     if(scanReady) {
       //gate sensor sees piece
-      if(digitalRead(gatePin) == LOW && camGo == 0) {
+      int gateValue = analogRead(gatePin);
+      if(gateValue < GATE_THRESHOLD && camGo == 0) {
+        Serial.print("Gate Value: ");
+        Serial.println(gateValue);
         Serial.println("Piece Seen!");
         camGo = 1;
-        
+
       }
-      
+
       if(camGo) {
         if(scanSent == 0) {
           Serial.println("REQUEST SCAN");
@@ -120,7 +131,7 @@ void loop(){
           delay(500);
           Serial.println("REQUEST ORIENT");
           Wire.requestFrom(2, 2);
-            Serial.println("REQUEST SENT");
+          Serial.println("REQUEST SENT");
           while(Wire.available()) {
             Serial.println("READING...");
             isDone = Wire.read();
@@ -134,15 +145,20 @@ void loop(){
           }  
         }
       }
-      
+
       //scan piece
       //Serial.print("Servo Go :");
       //Serial.println(servoGo);
       if(servoGo) {
         Serial.print("Servo Go!");
+        //send handshake
+        digitalWrite(commOutPin, HIGH);
         servoGo = 1;
         camGo = 0;
         scanReady = 0;
+      }
+      else {
+        digitalWrite(commOutPin, LOW);
       }
     }
     //turn servo
@@ -152,11 +168,11 @@ void loop(){
           orientation == LEFT_ROUND) {
           //Serial.println("LEFT");
           myservo.write(SERVO_LEFT);
-          }
+        }
         else {
           //Serial.println("RIGHT");
           myservo.write(SERVO_RIGHT);
-          }
+        }
       }
       else {
         myservo.write(SERVO_REST);
@@ -165,9 +181,15 @@ void loop(){
 
     }
 
-    //send handshake
     //confirm reply
-    //pieceCount++
+    int reply = digitalRead(commInPin);
+    if(servoGo && reply) {
+      Serial.println("Ready for next Piece, Resetting...");
+      servoGo = 0;
+      dispenserReady = 1;
+      //pieceCount++;
+
+    }
   }
 
 }
