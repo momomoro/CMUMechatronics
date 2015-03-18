@@ -8,8 +8,10 @@
 
 #include <AccelStepper.h>
 
+int gateSensor = 8;
+
 // Define a stepper and the pins it will use
-AccelStepper stepper; // Defaults to AccelStepper::FULL4WIRE (4 pins) on 2, 3, 4, 5
+AccelStepper stepper;
 AccelStepper stepper2(AccelStepper::FULL4WIRE, 6, 7, 8, 9);
 
 void setup()
@@ -18,24 +20,32 @@ void setup()
   stepper.setAcceleration(20);
   stepper2.setMaxSpeed(50);
   stepper2.setAcceleration(20);
+  pinMode(gateSensor,INPUT);
+  Serial.begin(9600);
 }
 
 void loop()
 {  //Tray movement
   for(int i = 0; i < 4; i++) { 
+    Serial.print(" Moving Tray ");
     //Arm movement
     for(int j = 0; j < 5; j++) {
+      Serial.print(" Moving Arm ");
       //part acknowledged 
-      if (gateSensor) {
-        stepper.moveTo(100 - j*18); //need to play with this number
+      if (digitalRead(gateSensor) == LOW) {
+        stepper2.moveTo(100 - j*18); //need to play with this number
       }
-      stepper.run();
+      stepper2.run();
       //move arm back to home
-      stepper.moveTo(0);
-      stepper.run();
+      stepper2.moveTo(0);
+      stepper2.run();
     }
     //move tray
-    stepper2.move(10);
-    stepper.run()
+    stepper.move(100);
+    stepper.run();
   }
+  Serial.print("Done");
+  //make sure to never leave this function
+  for(;;) {
+    }
 }
