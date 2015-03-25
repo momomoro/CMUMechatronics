@@ -32,8 +32,8 @@ void setup()
   pinMode(commOutPin, OUTPUT);
   pinMode(commInPin, INPUT);
   pinMode(gatePin, INPUT);
-  fluxStepper.setSpeed(500);
-  wireStepper.setSpeed(500);
+  fluxStepper.setSpeed(200);
+  wireStepper.setSpeed(200);
   digitalWrite(commOutPin, LOW);
   Serial.begin(9600);
   Serial.print("Starting...\n");
@@ -42,6 +42,7 @@ void setup()
 void loop() 
 {
   int signal = digitalRead(commInPin);
+  Serial.println(signal);
 
   if(!signal && done && signal_latch) {
     signal_latch = 0;

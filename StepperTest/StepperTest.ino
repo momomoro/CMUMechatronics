@@ -1,6 +1,6 @@
 int stepPin = 6;  
 int dirPin = 7;
-volatile int encoderPin_ACurr = LOW;
+/*volatile int encoderPin_ACurr = LOW;
 volatile int encoderPin_BCurr = LOW;
 int L3Pin = 9;
 int L4Pin = 10;
@@ -9,7 +9,7 @@ int encoderPin_B = 2;
 int encoderPin_A = 3;
 
 volatile int encoderPin_ALast = LOW;
-volatile int encoderPos = 0;
+volatile int encoderPos = 0;*/
 int count = 0;
 int MAX = 1000;
 
@@ -18,16 +18,16 @@ long enlastTime = 0;
 
 void setup()
 {
-  pinMode(L3Pin, OUTPUT);
-  pinMode(L4Pin, OUTPUT);
-  pinMode(enMotorPin, OUTPUT);
+  //pinMode(L3Pin, OUTPUT);
+  //pinMode(L4Pin, OUTPUT);
+  //pinMode(enMotorPin, OUTPUT);
   //pinMode(encoderPin_B, INPUT);
   //pinMode(encoderPin_A, INPUT);
-  attachInterrupt(0, updateEncoders, CHANGE);
-  attachInterrupt(1, updateEncoders, CHANGE);
+  //attachInterrupt(0, updateEncoders, CHANGE);
+  //attachInterrupt(1, updateEncoders, CHANGE);
   pinMode(stepPin, OUTPUT);
   pinMode(dirPin, OUTPUT);   
-  digitalWrite(dirPin, HIGH);
+  digitalWrite(dirPin, LOW);
   Serial.begin(9600);          //  setup serial
 }
 
@@ -88,7 +88,7 @@ int stepper_stepOnce(long stepperDur, long currTime) {
   return stepDone;
 }
 
-void updateEncoders() {
+/*void updateEncoders() {
   encoderPin_ACurr = digitalRead(encoderPin_A);
   encoderPin_BCurr = digitalRead(encoderPin_B);
   if(encoderPin_ACurr == HIGH &&
@@ -102,5 +102,5 @@ void updateEncoders() {
   }
   encoderPin_ALast = encoderPin_ACurr;
 }
-
+*/
 

@@ -13,8 +13,8 @@
 
 Pixy pixy;
 const int numReadings = 10;
-const int LEFT_THRESHOLD = 40;
-const int RIGHT_THRESHOLD = 40;
+const int LEFT_THRESHOLD = 35;
+const int RIGHT_THRESHOLD = 35;
 
 int greenAverage = 0;
 int greenReadings[numReadings];
