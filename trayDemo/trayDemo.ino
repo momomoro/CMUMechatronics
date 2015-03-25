@@ -53,4 +53,7 @@ void loop() {
     trayStepper.step(STEPSIZE);
     delay(500);
   }
+  digitalWrite(commOutPin,HIGH);
+  delay(1000);
+  digitalWrite(commOutPin,LOW);
 }
