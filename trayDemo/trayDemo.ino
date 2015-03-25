@@ -1,10 +1,13 @@
 #include <Stepper.h>
 
-#define THRESHOLD .002
+#define THRESHOLD 200
 #define STEPSIZE 30
 #define ARMEND 120
 
 const int steps = 200;
+
+int commOutPin = 3;
+int commInPin = 2;
 
 int pieceReady = 0;
 
@@ -24,6 +27,8 @@ Stepper trayStepper(steps, trayStepPin, trayDirPin);
 Stepper armStepper(steps, armStepPin, armDirPin);
 
 void setup() {
+  pinMode(commOutPin, OUTPUT);
+  pinMode(commInPin, INPUT);
   pinMode(gate, INPUT);
   trayStepper.setSpeed(250);
   armStepper.setSpeed(250);
@@ -32,10 +37,12 @@ void setup() {
 }
 
 void loop() {
+  while(digitalRead(commInPin)) { //wait for arduino com
+  }
   for(i = 0; i < 5; i++) {
     for(j = 0; j < 5; j++) {
       Serial.println("Wait");
-      while(pieceNotReady) {
+      while(analogRead(gate) < THRESHOLD) { //wait for piece
       }
       Serial.println("Go!");
       Serial.println("Arm Move!");
