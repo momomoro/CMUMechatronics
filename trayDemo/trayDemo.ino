@@ -15,6 +15,9 @@ int trayStepPin = 8;
 int trayDirPin = 9;
 int armStepPin = 6;
 int armDirPin = 7;
+
+//Control logic
+int limitSwitch = 5;
 int gate = A0;
 
 //loop parameters
@@ -30,6 +33,7 @@ void setup() {
   pinMode(commOutPin, OUTPUT);
   pinMode(commInPin, INPUT);
   pinMode(gate, INPUT);
+  pinMode(limitSwitch, INPUT);
   trayStepper.setSpeed(250);
   armStepper.setSpeed(250);
   Serial.begin(9600);
@@ -38,6 +42,9 @@ void setup() {
 
 void loop() {
   while(digitalRead(commInPin)) { //wait for arduino com
+  }
+  while(digitalRead(limitSwitch)) { //run until you hit limit switch
+    trayStepper.step(-1);
   }
   for(i = 0; i < 5; i++) {
     for(j = 0; j < 5; j++) {
