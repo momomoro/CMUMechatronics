@@ -3,13 +3,14 @@
 #include <Wire.h>
 
 #define NUM_BYTES 20
-#define HOPPER 1
+#define CAMERAMODULE 1
 #define ORIENTATOR 2
-#define WIRE_APP 3
-#define FLUX 4
-#define PIECE_PLACE 5
+#define FLUX 3
+#define WIREAPP 4
+#define PIECEPLACE 5
 
 char response[NUM_BYTES+1]; //String array to hold response from slave
+char query[NUM_BYTES+1]; //String array to send query to slave
 
 void setup() {
   Wire.begin();  //Start I2c bus
@@ -18,12 +19,34 @@ void setup() {
 
 
 void loop() {
-  for(int i = 0; i < 6; i++) {
-    SendQuery(i,"begin");
-    Recieve(i,NUM_BYTES);
-    Serial.println(response); //Check for response here
-    delay(500);
- }
+  switch(response[0]) {
+    case 'C':
+      SendQuery(ORIENTATOR,"Camera module message");
+      delay(1000);
+      Recieve(ORIENTATOR,NUM_BYTES);
+      break;
+    case 'O':
+      SendQuery(PIECEPLACE,"distance to move");
+      delay(1000);
+      SendQuery(FLUX,"distance to step");
+      delay(1000);
+      Recieve(FLUX,NUM_BYTES);
+      break;
+    case 'F':
+      SendQuery(PIECEPLACE,"distance to move");
+      delay(1000);
+      SendQuery(WIREAPP,"distance to step");
+      delay(1000);
+      Recieve(WIREAPP,NUM_BYTES);
+      break;
+   case 'W':
+      SendQuery(PIECEPLACE,"distance to move");
+      break;
+   default:
+      SendQuery(CAMERAMODULE,"Begin process");
+      delay(5000);
+      Recieve(CAMERAMODULE,NUM_BYTES);
+  }  
 }
 
 /* function to send data to certain device,
