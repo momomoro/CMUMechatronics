@@ -6,27 +6,37 @@
 // Copyright (C) 2012 Mike McCauley
 // $Id: Random.pde,v 1.1 2011/01/05 01:51:01 mikem Exp mikem $
 
-#include <AccelStepper.h>
+#include <Stepper.h>
 #include <Wire.h>
 
 #define NUM_BYTES 20
+#define STEPSIZE 30
+#define FLUXSTEP 50
+#define WIRESTEP 50
 
+const int steps = 200;
+
+int limitSwitch = 5;
 int gateSensor = 8;
 int go = 0;
 char query[NUM_BYTES+1]; //Array to hold query from master
 char response;
 
+int trayStepPin = 8;
+int trayDirPin = 9;
+int armStepPin = 6;
+int armDirPin = 7;
+
 // Define a stepper and the pins it will use
-AccelStepper stepper;
-AccelStepper stepper2(AccelStepper::FULL4WIRE, 2, 3, 4, 5);
+Stepper tray(steps, trayStepPin, trayDirPin);
+Stepper arm(steps, armStepPin, armDirPin);
 
 void setup()
 {  
-  stepper.setMaxSpeed(50);
-  stepper.setAcceleration(20);
-  stepper2.setMaxSpeed(50);
-  stepper2.setAcceleration(20);
+  tray.setSpeed(250);
+  arm.setSpeed(250);
   pinMode(gateSensor,INPUT);
+  pinMode(limitSwitch,INPUT);
   Serial.begin(9600);
   Wire.begin(5);
   Wire.onReceive(recieveEvent);
@@ -40,8 +50,10 @@ void loop()
 
 
 void placePart() {
-   for(int i = 0; i < 4; i++) { 
-    Serial.print(" Moving Tray ");
+  while(digitalRead(limitSwitch)) { //run until you hit lmit switch
+    tray.step(-1);
+  }
+  for(int i = 0; i < 4; i++) { 
     //Arm movement
     for(int j = 0; j < 5; j++) {
       Serial.println("Waiting");
@@ -57,16 +69,16 @@ void placePart() {
       moveToWire();
       wait();
       Serial.print(" Moving Arm ");
-      stepper2.moveTo(100 - j*18); //need to play with this number
-      stepper2.run();
+      int pieceStep = 100 - j*20;
+      arm.step(pieceStep); //need to play with this number
       //move arm back to home
-      stepper2.moveTo(0);
-      stepper2.run();
+      delay(500);
+      arm.step(-(pieceStep + FLUXSTEP + WIRESTEP));
       response = 'Y';
     }
     //move tray
-    stepper.move(100);
-    stepper.run();
+    Serial.print(" Moving Tray ");
+    tray.step(100);
   }
   Serial.print("Done");
   //make sure to never leave this function
@@ -75,12 +87,12 @@ void placePart() {
 }
 
 void moveToFlux() {
-  stepper2.moveTo(50);
+  arm.step(FLUXSTEP);
   response = 'Y';
 }
 
 void moveToWire() {
-  stepper2.moveTo(100);
+  arm.step(FLUXSTEP);
   response = 'Y';
 }
 
