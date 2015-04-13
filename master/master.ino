@@ -3,22 +3,32 @@
 #include <Wire.h>
 
 #define NUM_BYTES 20
-#define ORIENT 0
+#define ORIENTOR 0
 #define CAMERAMODULE 2
 #define ORIENTATOR 3
 #define FLUX 4
 #define WIREAPP 4
 #define PIECEPLACE 5
 
-#define START 6
+#define START 1
+#define IDENTIFY 2
+#define ORIENT 3
+#define APPLY_FLUX 4
+#define APPLY_WIRE 5
+#define MOVE_PART 6
 
 char response[NUM_BYTES+1]; //String array to hold response from slave
 char query[NUM_BYTES+1]; //String array to send query to slave
 
 int state;
+int switch1 = 2;
+int switch2 = 3; /* needs to be adjusted */
 
 void setup() {
+  pinMode(switch1,INPUT);
+  pinMode(switch2,INPUT);
   Wire.begin();  //Start I2c bus
+  startUp();
   Serial.begin(9600);
   state = START;
 }
@@ -26,7 +36,7 @@ void setup() {
 
 void loop() {
   switch(state) {
-    case CAMERAMODULE:
+    case IDENTIFY:
       Serial.println("In Camera");
       SendQuery(CAMERAMODULE,"A");
       delay(500);
@@ -44,10 +54,10 @@ void loop() {
       delay(1000);
       Recieve(ORIENTATOR,NUM_BYTES);
       if(response[0] == 'Y') {
-        state = 1;
+        state = APPLY_FLUX;
       }
       break;
-    case 1:
+    case APPLY_FLUX:
       SendQuery(PIECEPLACE,"Move to Flux");
       while(response[0] != 'Y') {
         Recieve(PIECEPLACE,NUM_BYTES);
@@ -56,9 +66,9 @@ void loop() {
       while(response[0] != 'Y') {
         Recieve(FLUX,NUM_BYTES);
       }
-      state = WIREAPP;
+      state = APPLY_WIRE;
       break;
-    case WIREAPP:
+    case APPLY_WIRE:
       Serial.println("WireAPP");
       SendQuery(PIECEPLACE,"Move to Wire");
       while(response[0] != 'Y') {
@@ -70,7 +80,7 @@ void loop() {
       }
       state = PIECEPLACE;
       break;
-   case PIECEPLACE:
+   case MOVE_PART:
       Serial.println("Place");
       SendQuery(PIECEPLACE,"Move Part");
       while(response[0] != 'Y') {
@@ -86,7 +96,7 @@ void loop() {
         Serial.println("Response is : ");
         Serial.println(response);
       }
-      state = CAMERAMODULE;
+      state = IDENTIFY;
       break;
    default:
      SendQuery(ORIENTATOR,"Hello");
@@ -98,6 +108,18 @@ void loop() {
 device : device number to send message to (set up in that devices code
 message : message to send to device 
 */
+
+void startUp() {
+  int switchValue = 0; //TODO: Pull actual switch value
+  char configVal[2];
+  String val;
+  val = String(switchValue);
+  val.toCharArray(configVal,2);
+  SendQuery(ORIENTOR,configVal);
+  SendQuery(CAMERAMODULE,configVal);
+  SendQuery(FLUX,configVal);
+  SendQuery(PIECEPLACE,configVal);
+}
 
 void SendQuery(int device, char message[]) {
   Wire.beginTransmission(device);

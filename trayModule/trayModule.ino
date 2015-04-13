@@ -10,9 +10,10 @@
 #include <Wire.h>
 
 #define NUM_BYTES 20
-#define STEPSIZE 30
-#define FLUXSTEP 50
-#define WIRESTEP 50
+#define STEPSIZE 200
+#define FLUXSTEP 200
+#define WIRESTEP 200
+#define ARMEND 300
 
 const int steps = 200;
 
@@ -41,6 +42,8 @@ void setup()
   Wire.begin(5);
   Wire.onReceive(recieveEvent);
   Wire.onRequest(requestEvent);
+  delay(3000); //wait for config from master
+  startUp(int(query));
 }
 
 void loop()
@@ -69,7 +72,7 @@ void placePart() {
       moveToWire();
       wait();
       Serial.print(" Moving Arm ");
-      int pieceStep = 100 - j*20;
+      int pieceStep = ARMEND - j*20;
       arm.step(pieceStep); //need to play with this number
       //move arm back to home
       delay(500);
@@ -121,3 +124,20 @@ void recieveEvent(int numBytes) {
 void requestEvent() {
   Wire.write(response);
 }
+
+void startUp(int switchVal) {
+  switch(switchVal){
+    case 0:
+      break;
+    case 1:
+      break;
+    case 2:
+      break;
+    case 3:
+      break;
+    default:
+      break;
+  }
+}
+  
+  
