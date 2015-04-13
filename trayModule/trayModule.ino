@@ -18,7 +18,7 @@
 const int steps = 200;
 
 int limitSwitch = 5;
-int gateSensor = 8;
+int gateSensor = 4;
 int go = 0;
 char query[NUM_BYTES+1]; //Array to hold query from master
 char response;
@@ -95,7 +95,7 @@ void moveToFlux() {
 }
 
 void moveToWire() {
-  arm.step(FLUXSTEP);
+  arm.step(WIRESTEP);
   response = 'Y';
 }
 
