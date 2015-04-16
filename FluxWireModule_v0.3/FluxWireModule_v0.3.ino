@@ -3,8 +3,8 @@
 
 #define STEPS 200
 #define GATE_THRESHOLD 200
-#define FLUX_STEP 140
-#define WIRE_STEP 400
+#define FLUX_STEP 20
+#define WIRE_STEP 700
 
 //constants
 const int ID = 4;
@@ -34,8 +34,8 @@ char moduleDone = 'N';
 
 void setup() {
   pinMode(gatePin, INPUT);
-  fluxStepper.setSpeed(50);
-  wireStepper.setSpeed(200);
+  fluxStepper.setSpeed(20);
+  wireStepper.setSpeed(300);
 
   Wire.begin(ID);
   Wire.onReceive(receiveEvent);
@@ -64,7 +64,6 @@ void loop()  {
   if(fluxReady) {
     Serial.println("Flux Done");
     fluxStepper.step(FLUX_STEP);
-    delay(100);
     fluxReady = 0;
     moduleDone = 'Y';
   }
