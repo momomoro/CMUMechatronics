@@ -10,8 +10,8 @@ const int RIGHT_SIG = 2;
 
 const int NUM_READINGS = 6;
 const int MAX_READINGS = 20;
-const int LEFT_THRESHOLD_A = 35;
-const int RIGHT_THRESHOLD_A = 35;
+const int LEFT_THRESHOLD_A = 49;
+const int RIGHT_THRESHOLD_A = 41;
 const int LEFT_THRESHOLD_B = 51;
 const int RIGHT_THRESHOLD_B = 55;
 const int LEFT_THRESHOLD_C = 51;
