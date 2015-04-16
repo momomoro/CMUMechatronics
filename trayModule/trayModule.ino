@@ -12,6 +12,7 @@
 #define NUM_BYTES 20
 #define STEPSIZE 200
 #define FLUXSTEP 200
+#define TRAYSTEP 100
 #define WIRESTEP 200
 #define ARMEND 300
 
@@ -34,8 +35,8 @@ Stepper arm(steps, armStepPin, armDirPin);
 
 void setup()
 {  
-  tray.setSpeed(250);
-  arm.setSpeed(250);
+  tray.setSpeed(150);
+  arm.setSpeed(180);
   pinMode(gateSensor,INPUT);
   pinMode(limitSwitch,INPUT);
   Serial.begin(9600);
@@ -67,8 +68,10 @@ void placePart() {
       Serial.println("past gate");
       moveToFlux();
       wait();
+      //delay(500);
       moveToWire();
       wait();
+      //delay(500);
       Serial.print(" Moving Arm ");
       int pieceStep = ARMEND - j*20;
       arm.step(pieceStep); //need to play with this number
@@ -76,10 +79,11 @@ void placePart() {
       delay(500);
       arm.step(-(pieceStep + FLUXSTEP + WIRESTEP));
       response = 'Y';
+      //delay(500);
     }
     //move tray
     Serial.print(" Moving Tray ");
-    tray.step(100);
+    tray.step(TRAYSTEP);
   }
   Serial.print("Done");
   //make sure to never leave this function
