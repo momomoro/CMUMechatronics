@@ -43,6 +43,8 @@ void setup()
   Wire.begin(5);
   Wire.onReceive(recieveEvent);
   Wire.onRequest(requestEvent);
+  delay(3000); //wait for config from master
+  startUp(int(query));
 }
 
 void loop()
@@ -126,3 +128,20 @@ void recieveEvent(int numBytes) {
 void requestEvent() {
   Wire.write(response);
 }
+
+void startUp(int switchVal) {
+  switch(switchVal){
+    case 0:
+      break;
+    case 1:
+      break;
+    case 2:
+      break;
+    case 3:
+      break;
+    default:
+      break;
+  }
+}
+  
+  
