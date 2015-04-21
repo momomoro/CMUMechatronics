@@ -16,6 +16,15 @@
 #define WIRESTEP 200
 #define ARMEND 300
 
+const char SETUP_REQUEST = 'S';
+
+int ARM_STEP = 20;
+int ARM_STEPS_TO_APP = 100;
+int TRAY_MAX_STEP_TO_FLUX = 100;
+int TRAY_STEP_OFFSET = 20;
+int TRAY_STEP_TO_WIRE = 100;
+int TRAY_STEP_NEXT_ROW = 20;
+
 const int steps = 200;
 
 int limitSwitch = 5;
@@ -43,8 +52,9 @@ void setup()
   Wire.begin(5);
   Wire.onReceive(recieveEvent);
   Wire.onRequest(requestEvent);
-  delay(3000); //wait for config from master
+  delay(1000); //wait for config from master
   startUp(int(query));
+  Serial.println("Starting...");
 }
 
 void loop()
@@ -121,7 +131,32 @@ void recieveEvent(int numBytes) {
       query[i] = c;
       i++;
   }
-  go = 1;
+  if(query[0] == SETUP_REQUEST) {
+      char currMode = query[1];
+      /*switch(currMode) {
+        case(MODE_A):
+          mode = 1;
+          break;
+        case(MODE_B):
+          mode = 2; 
+          break;
+        case(MODE_C):
+          mode = 2; 
+          break;
+        case(MODE_D):
+          mode = 2; 
+          break;
+        default:
+          mode = 1;
+          break;
+      }*/
+      Serial.print("mode: ");
+      Serial.println(currMode);
+      
+  }
+  else {
+    go = 1;
+  }
   response = 'W';
 }
   
