@@ -14,6 +14,7 @@
 #define FLUXSTEP 200
 #define TRAYSTEP 100
 #define WIRESTEP 200
+#define ALIGNSTEP 100
 #define ARMEND 300
 
 const int steps = 200;
@@ -58,31 +59,33 @@ void placePart() {
     tray.step(-1);
   }
   for(int i = 0; i < 4; i++) { 
-    //Arm movement
+	Serial.println("Waiting");
+    wait();
     for(int j = 0; j < 5; j++) {
-      Serial.println("Waiting");
-      wait();
-      Serial.println("At gate");
-      while(digitalRead(gateSensor) == LOW) {
+	  Serial.println("At gate");
+	  while(digitalRead(gateSensor) == LOW) {
         Serial.print(analogRead(gateSensor));
         Serial.println("Waiting for gate");
       }
       Serial.println("past gate");
+	  arm.step(ALIGNSTEP); //get aligned with wire & flux
+	  Serial.println("Waiting");
+	  wait();
       moveToFlux();
       wait();
       //delay(500);
       moveToWire();
       wait();
       //delay(500);
-      Serial.print(" Moving Arm ");
-      int pieceStep = ARMEND - j*20;
+	  moveToArm();
+      //delay(500);
+	  int pieceStep = ARMEND - j*20;
       arm.step(pieceStep); //need to play with this number
       //move arm back to home
       delay(500);
-      arm.step(-(pieceStep + FLUXSTEP + WIRESTEP));
+      arm.step(-(pieceStep + ALIGNSTEP));
       response = 'Y';
-      //delay(500);
-    }
+	}
     //move tray
     Serial.print(" Moving Tray ");
     tray.step(TRAYSTEP);
@@ -93,13 +96,18 @@ void placePart() {
     }
 }
 
+void moveToArm() {
+	tray.step(-(FLUXSTEP + WIRESTEP));
+	response = 'Y';
+}
+
 void moveToFlux() {
-  arm.step(FLUXSTEP);
+  tray.step(FLUXSTEP);
   response = 'Y';
 }
 
 void moveToWire() {
-  arm.step(WIRESTEP);
+  tray.step(WIRESTEP);
   response = 'Y';
 }
 
@@ -120,6 +128,9 @@ void recieveEvent(int numBytes) {
       Serial.print(c);
       query[i] = c;
       i++;
+  }
+  if(query=="startUp") {
+	  return;
   }
   go = 1;
   response = 'W';
