@@ -16,19 +16,28 @@
 #define APPLY_FLUX 4
 #define APPLY_WIRE 5
 #define MOVE_PART 6
+#define DONE 7
+
+const char PIECE_A = 'A';
+const char PIECE_B = 'B';
+const char PIECE_C = 'C';
+const char PIECE_D = 'D';
 
 char response[NUM_BYTES+1]; //String array to hold response from slave
 char query[NUM_BYTES+1]; //String array to send query to slave
+char mode = PIECE_A;
 
 int state;
-int switch1 = 2;
-int switch2 = 3; /* needs to be adjusted */
+int switch1 = 6;
+int switch2 = 7; /* needs to be adjusted */
+int count = 0;
 
 void setup() {
   pinMode(switch1,INPUT);
   pinMode(switch2,INPUT);
   Wire.begin();  //Start I2c bus
   startUp();
+  count = 0;
   Serial.begin(9600);
   state = START;
 }
@@ -38,7 +47,9 @@ void loop() {
   switch(state) {
     case IDENTIFY:
       Serial.println("In Camera");
-      SendQuery(CAMERAMODULE,"A");
+      char cameraMSG[1];
+      cameraMSG[0] = mode;
+      SendQuery(CAMERAMODULE,cameraMSG);
       delay(500);
       while(response[0] != 'Y') {
         Recieve(CAMERAMODULE,NUM_BYTES);
@@ -78,7 +89,7 @@ void loop() {
       while(response[0] != 'Y') {
         Recieve(WIREAPP,NUM_BYTES);
       }
-      state = PIECEPLACE;
+      state = MOVE_PART;
       break;
    case MOVE_PART:
       Serial.println("Place");
@@ -86,7 +97,15 @@ void loop() {
       while(response[0] != 'Y') {
         Recieve(PIECEPLACE,NUM_BYTES);
       }
-      state = START;
+      count = count + 1;
+      Serial.print("Count: ");
+      Serial.println(count);
+      if(count >= 20) {
+        state = DONE;
+      }
+      else {
+        state = START;
+      }
       break;
    case START:
       Serial.println("Beginning process");
@@ -98,6 +117,9 @@ void loop() {
       }
       state = IDENTIFY;
       break;
+   case DONE:
+     Serial.println("Done.");
+     break;
    default:
      SendQuery(ORIENTATOR,"Hello");
      break;
@@ -110,15 +132,28 @@ message : message to send to device
 */
 
 void startUp() {
-  int switchValue = 0; //TODO: Pull actual switch value
-  char configVal[2];
-  String val;
-  val = String(switchValue);
-  val.toCharArray(configVal,2);
-  SendQuery(ORIENTOR,configVal);
-  SendQuery(CAMERAMODULE,configVal);
-  SendQuery(FLUX,configVal);
-  SendQuery(PIECEPLACE,configVal);
+  bool switch1Val = digitalRead(switch1);
+  bool switch2Val = digitalRead(switch2);
+  
+  if(switch1Val && switch2Val) {
+    mode = PIECE_D;
+  }
+  else if (switch1Val && !switch2Val) {
+    mode = PIECE_C;
+  }
+  else if (!switch1Val && switch2Val) {
+    mode = PIECE_B;
+  }
+  else {
+    mode = PIECE_A;
+  }
+  
+  char setupMsg[2];
+  setupMsg[0] = 'S';
+  setupMsg[1] = mode;
+  
+  SendQuery(WIREAPP,setupMsg);
+  SendQuery(PIECEPLACE,setupMsg);
 }
 
 void SendQuery(int device, char message[]) {
