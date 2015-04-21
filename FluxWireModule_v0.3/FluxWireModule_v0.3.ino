@@ -3,14 +3,22 @@
 
 #define STEPS 200
 #define GATE_THRESHOLD 200
-#define FLUX_STEP 20
-#define WIRE_STEP 700
+#define FLUX_STEP 40
+#define WIRE_FULL 800
+#define WIRE_HALF 400
 
 //constants
 const int ID = 4;
 const char GATE_REQUEST = 'G';
 const char FLUX_REQUEST = 'F';
 const char WIRE_REQUEST = 'W';
+const char SETUP_REQUEST = 'S';
+
+
+const char MODE_A = 'A';
+const char MODE_B = 'B';
+const char MODE_C = 'C';
+const char MODE_D = 'D';
 
 //query
 char query[2];
@@ -31,11 +39,12 @@ boolean wireReady = 0;
 boolean fluxReady = 0;
 boolean checkGate = 0;
 char moduleDone = 'N';
+int mode = 1;
 
 void setup() {
   pinMode(gatePin, INPUT);
-  fluxStepper.setSpeed(20);
-  wireStepper.setSpeed(300);
+  fluxStepper.setSpeed(10);
+  wireStepper.setSpeed(200);
 
   Wire.begin(ID);
   Wire.onReceive(receiveEvent);
@@ -62,20 +71,30 @@ void loop()  {
   //apply flux
 
   if(fluxReady) {
-    Serial.println("Flux Done");
     fluxStepper.step(FLUX_STEP);
     fluxReady = 0;
     moduleDone = 'Y';
+    Serial.println("Flux Done");
   }
   //apply wire
   if(wireReady) {
-    Serial.println("Wire Done");
-    wireStepper.step(WIRE_STEP);
-    delay(100);
-    wireStepper.step(-WIRE_STEP);
-    delay(100);
+    if (mode == 1) {
+      wireStepper.step(WIRE_FULL);
+      delay(100);
+    }
+    else if (mode == 2) {
+      wireStepper.step(WIRE_FULL);
+      delay(100);
+      wireStepper.step(-WIRE_FULL);
+      delay(100);
+      wireStepper.step(WIRE_HALF);
+      delay(100);
+      wireStepper.step(-WIRE_HALF);
+      delay(100);
+    }
     wireReady = 0;
     moduleDone = 'Y';
+    Serial.println("Wire Done");
   }
 }
 
@@ -93,6 +112,27 @@ void receiveEvent(int maxCount) {
     Serial.println(c);
     query[i] = c;
     i++;
+  }
+  
+  if(query[0] == SETUP_REQUEST) {
+      char currMode = query[1];
+      switch(currMode) {
+        case(MODE_A):
+          mode = 1;
+          break;
+        case(MODE_B):
+          mode = 2; 
+          break;
+        case(MODE_C):
+          mode = 2; 
+          break;
+        case(MODE_D):
+          mode = 2; 
+          break;
+        default:
+          mode = 1;
+          break;
+      }
   }
 
   if(query[0] == GATE_REQUEST) {
