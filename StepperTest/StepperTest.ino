@@ -1,5 +1,5 @@
-int stepPin = 6;  
-int dirPin = 7;
+int stepPin = 9;  
+int dirPin = 8;
 /*volatile int encoderPin_ACurr = LOW;
 volatile int encoderPin_BCurr = LOW;
 int L3Pin = 9;
@@ -27,7 +27,7 @@ void setup()
   //attachInterrupt(1, updateEncoders, CHANGE);
   pinMode(stepPin, OUTPUT);
   pinMode(dirPin, OUTPUT);   
-  digitalWrite(dirPin, LOW);
+  digitalWrite(dirPin, HIGH);
   Serial.begin(9600);          //  setup serial
 }
 
@@ -38,7 +38,7 @@ void loop()
 
   //send pulses every 0.01s
   //each pulse is a rotation
-  if(count < 50) {    
+  if(count < 10) {    
     //encoder motor controls
 /*    int angle = encoderPos;
     digitalWrite(enMotorPin, HIGH);
@@ -75,13 +75,13 @@ void loop()
 int stepper_stepOnce(long stepperDur, long currTime) {
   int stepDone = 0;
 
-  if(stepperDur <= 10) {
+  if(stepperDur <= 100) {
     digitalWrite(stepPin, HIGH);
   }
   else {
     digitalWrite(stepPin, LOW);
   }
-  if (stepperDur > 20) {
+  if (stepperDur > 200) {
     lastTime = currTime;
     stepDone = 1;
   }

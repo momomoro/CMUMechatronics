@@ -2,13 +2,13 @@
 
 #define STEPS 200
 #define GATE_THRESHOLD 200
-#define FLUX_STEP 100  
+#define FLUX_STEP 200  
 #define WIRE_STEP 400  
 
 //control flow vars
-int go = 0;
-int fluxReady = 0;
-int wireReady = 0;
+int go = 1;
+int fluxReady = 1;
+int wireReady = 1;
 int done = 0;
 int signal_latch = 0;
 
@@ -42,7 +42,6 @@ void setup()
 void loop() 
 {
   int signal = digitalRead(commInPin);
-  Serial.println(signal);
 
   if(!signal && done && signal_latch) {
     signal_latch = 0;
