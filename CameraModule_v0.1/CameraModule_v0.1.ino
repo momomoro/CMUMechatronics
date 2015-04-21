@@ -8,7 +8,7 @@ Pixy pixy;
 const int LEFT_SIG = 1;
 const int RIGHT_SIG = 2;
 
-const int NUM_READINGS = 6;
+const int NUM_READINGS = 4;
 const int MAX_READINGS = 20;
 const int LEFT_THRESHOLD_A = 49;
 const int RIGHT_THRESHOLD_A = 41;
