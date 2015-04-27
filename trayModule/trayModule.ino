@@ -17,6 +17,7 @@
 #define ALIGNSTEP 650
 #define ARMEND 200
 #define TRAY_SETUP_STEP 1900
+#define COLOR_THRESHOLD 250
 
 const char SETUP_REQUEST = 'S';
 
@@ -29,6 +30,8 @@ int TRAY_STEP_TO_WIRE = 100;
 int TRAY_STEP_NEXT_ROW = 20;
 */
 const int steps = 200;
+
+int IRsensor = A0;
 
 int limitSwitch = 5;
 int gateSensor = 4;
@@ -50,6 +53,7 @@ void setup()
 {
   tray.setSpeed(150);
   arm.setSpeed(180);
+  pinMode(IRsensor, INPUT);
   pinMode(gateSensor, INPUT);
   pinMode(limitSwitch, INPUT);
   Serial.begin(9600);
@@ -80,18 +84,13 @@ void placePart() {
       }*/
       delay(1000);
       Serial.println("past gate");
-      for (int k = 0; k < ALIGNSTEP; k++) {
-        arm.step(1);
-      }
-      for (int k = 0; k < ALIGNSTEP; k++) {
-        arm.step(-1);
-      }
+      align();
       //arm.step(950); //get aligned with wire & flux
       Serial.println("Waiting");
       //wait();
       //delay(1000);
       //move offset
-      tray.step(-TRAYSTEP * i);
+      tray.step(-TRAYSTEP * i); //I don't think we want this
 
       moveToFlux();
       wait();
@@ -103,10 +102,11 @@ void placePart() {
       moveToArm();
       delay(500);
       //tray return offset
-      int pieceStep = ALIGNSTEP + ARMEND - j * 20;
+      int pieceStep = ARMEND - j * 20;
       arm.step(pieceStep); //need to play with this number
       //move arm back to home
       arm.step(-pieceStep);
+      moveArmToHome();
       tray.step(TRAYSTEP * i);
       
       response = 'Y';
@@ -119,6 +119,16 @@ void placePart() {
   Serial.print("Done");
   //make sure to never leave this function
   for (;;) {
+  }
+}
+
+void moveArmToHome() {
+  arm.step(-300);
+}
+
+void align() {
+  while(analogRead(IRsensor) > COLOR_THRESHOLD) {
+    arm.step(1);
   }
 }
 

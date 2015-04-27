@@ -41,26 +41,34 @@ void setup() {
 }
 
 void loop() {
-  while(digitalRead(commInPin)) { //wait for arduino com
-  }
   while(digitalRead(limitSwitch)) { //run until you hit limit switch
     trayStepper.step(-1);
   }
   for(i = 0; i < 5; i++) {
-    for(j = 0; j < 5; j++) {
+    for(j = 0; j < 4; j++) {
       Serial.println("Wait");
-      while(analogRead(gate) < THRESHOLD) { //wait for piece
+      while(!digitalRead(commInPin)) { //wait for arduino com
+        Serial.print(".");
       }
+      Serial.println();
+      //while(analogRead(gate) < THRESHOLD) { //wait for piece
+      //}
       Serial.println("Go!");
       Serial.println("Arm Move!");
       armStepper.step(ARMEND - j*STEPSIZE);
       delay(2000);
+      armStepper.step(-(ARMEND - j*STEPSIZE));
+      digitalWrite(commOutPin,HIGH);
+      delay(1000);
+      digitalWrite(commOutPin,LOW);
     }
     Serial.println("Tray Move!");
     trayStepper.step(STEPSIZE);
     delay(500);
   }
-  digitalWrite(commOutPin,HIGH);
-  delay(1000);
-  digitalWrite(commOutPin,LOW);
+  while(digitalRead(limitSwitch)) { //run until you hit limit switch
+    trayStepper.step(-1);
+  }
+  for(;;) {
+  } //make sure to never leave this function
 }

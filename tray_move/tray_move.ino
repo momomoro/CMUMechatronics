@@ -6,46 +6,118 @@
 // Copyright (C) 2012 Mike McCauley
 // $Id: Random.pde,v 1.1 2011/01/05 01:51:01 mikem Exp mikem $
 
-#include <AccelStepper.h>
+#include <Stepper.h>
+#include <Wire.h>
 
+#define NUM_BYTES 20
+#define STEPSIZE 30
+#define FLUXSTEP 50
+#define WIRESTEP 50
+
+const int steps = 200;
+
+int limitSwitch = 5;
 int gateSensor = 8;
+int go = 0;
+char query[NUM_BYTES+1]; //Array to hold query from master
+char response;
+
+int trayStepPin = 8;
+int trayDirPin = 9;
+int armStepPin = 6;
+int armDirPin = 7;
 
 // Define a stepper and the pins it will use
-AccelStepper stepper;
-AccelStepper stepper2(AccelStepper::FULL4WIRE, 6, 7, 8, 9);
+Stepper tray(steps, trayStepPin, trayDirPin);
+Stepper arm(steps, armStepPin, armDirPin);
 
 void setup()
 {  
-  stepper.setMaxSpeed(50);
-  stepper.setAcceleration(20);
-  stepper2.setMaxSpeed(50);
-  stepper2.setAcceleration(20);
+  tray.setSpeed(250);
+  arm.setSpeed(250);
   pinMode(gateSensor,INPUT);
+  pinMode(limitSwitch,INPUT);
   Serial.begin(9600);
+  Wire.begin(5);
+  Wire.onReceive(recieveEvent);
+  Wire.onRequest(requestEvent);
 }
 
 void loop()
-{  //Tray movement
+{  
+  placePart();
+}
+
+
+void placePart() {
+  while(digitalRead(limitSwitch)) { //run until you hit lmit switch
+    tray.step(-1);
+  }
   for(int i = 0; i < 4; i++) { 
-    Serial.print(" Moving Tray ");
     //Arm movement
     for(int j = 0; j < 5; j++) {
-      Serial.print(" Moving Arm ");
-      //part acknowledged 
-      if (digitalRead(gateSensor) == LOW) {
-        stepper2.moveTo(100 - j*18); //need to play with this number
+      Serial.println("Waiting");
+      wait();
+      Serial.println("At gate");
+      while(digitalRead(gateSensor) == LOW) {
+        Serial.print(analogRead(gateSensor));
+        Serial.println("Waiting for gate");
       }
-      stepper2.run();
+      Serial.println("past gate");
+      moveToFlux();
+      wait();
+      moveToWire();
+      wait();
+      Serial.print(" Moving Arm ");
+      int pieceStep = 100 - j*20;
+      arm.step(pieceStep); //need to play with this number
       //move arm back to home
-      stepper2.moveTo(0);
-      stepper2.run();
+      delay(500);
+      arm.step(-(pieceStep + FLUXSTEP + WIRESTEP));
+      response = 'Y';
     }
     //move tray
-    stepper.move(100);
-    stepper.run();
+    Serial.print(" Moving Tray ");
+    tray.step(100);
   }
   Serial.print("Done");
   //make sure to never leave this function
   for(;;) {
     }
+}
+
+void moveToFlux() {
+  arm.step(FLUXSTEP);
+  response = 'Y';
+}
+
+void moveToWire() {
+  arm.step(FLUXSTEP);
+  response = 'Y';
+}
+
+void wait() {
+  Serial.println("Starting wait");
+  while(!go) {
+    delay(100);
+    }
+  Serial.println("Done waiting");
+  go = 0;
+}
+
+void recieveEvent(int numBytes) {
+    while(Wire.available())
+    {
+      int i = 0;
+      char c = Wire.read();
+      Serial.print(c);
+      query[i] = c;
+      i++;
+  }
+  go = 1;
+  response = 'W';
+}
+  
+void requestEvent() {
+  Wire.write(response);
 }
