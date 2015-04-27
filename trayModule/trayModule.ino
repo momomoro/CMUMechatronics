@@ -31,7 +31,7 @@ int TRAY_STEP_NEXT_ROW = 20;
 */
 const int steps = 200;
 
-int IRsensor = A0;
+int QRE1113_Pin = 2;
 
 int limitSwitch = 5;
 int gateSensor = 4;
@@ -53,7 +53,6 @@ void setup()
 {
   tray.setSpeed(150);
   arm.setSpeed(180);
-  pinMode(IRsensor, INPUT);
   pinMode(gateSensor, INPUT);
   pinMode(limitSwitch, INPUT);
   Serial.begin(9600);
@@ -127,7 +126,7 @@ void moveArmToHome() {
 }
 
 void align() {
-  while(analogRead(IRsensor) > COLOR_THRESHOLD) {
+  while(readQD() > COLOR_THRESHOLD) {
     arm.step(1);
   }
 }
@@ -154,6 +153,24 @@ void wait() {
   }
   Serial.println("Done waiting");
   go = 0;
+}
+
+int readQD(){
+  //Returns value from the QRE1113 
+  //Lower numbers mean more refleacive
+  //More than 3000 means nothing was reflected.
+  pinMode( QRE1113_Pin, OUTPUT );
+  digitalWrite( QRE1113_Pin, HIGH );  
+  delayMicroseconds(10);
+  pinMode( QRE1113_Pin, INPUT );
+
+  long time = micros();
+
+  //time how long the input is HIGH, but quit after 3ms as nothing happens after that
+  while (digitalRead(QRE1113_Pin) == HIGH && micros() - time < 3000); 
+  int diff = micros() - time;
+
+  return diff;
 }
 
 void recieveEvent(int numBytes) {
