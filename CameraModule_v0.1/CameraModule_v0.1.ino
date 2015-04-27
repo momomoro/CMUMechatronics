@@ -10,14 +10,14 @@ const int RIGHT_SIG = 2;
 
 const int NUM_READINGS = 4;
 const int MAX_READINGS = 20;
-const int LEFT_THRESHOLD_A = 49;
-const int RIGHT_THRESHOLD_A = 41;
-const int LEFT_THRESHOLD_B = 51;
-const int RIGHT_THRESHOLD_B = 55;
-const int LEFT_THRESHOLD_C = 51;
-const int RIGHT_THRESHOLD_C = 55;
-const int LEFT_THRESHOLD_D = 51;
-const int RIGHT_THRESHOLD_D = 55;
+const int LEFT_THRESHOLD_A = 31;
+const int RIGHT_THRESHOLD_A = 31;
+const int LEFT_THRESHOLD_B = 31;
+const int RIGHT_THRESHOLD_B = 35;
+const int LEFT_THRESHOLD_C = 31;
+const int RIGHT_THRESHOLD_C = 31;
+const int LEFT_THRESHOLD_D = 31;
+const int RIGHT_THRESHOLD_D = 31;
 
 int LEFT_THRESHOLD = LEFT_THRESHOLD_A;
 int RIGHT_THRESHOLD = RIGHT_THRESHOLD_A;
@@ -37,6 +37,7 @@ char isDone = 'N';
 char mode = MODE_A;
 
 int refreshCount = 0;
+long lastTime = 0;
 
 //cam smoothing
 int leftAverage = 0;
@@ -65,7 +66,13 @@ void setup(){
 
 }
 
-void loop() {  
+void loop() {
+  long timeOut = millis() - lastTime;
+  if(timeOut > 4000) {
+    orientation = 'A';
+    isDone = 'Y';
+    lastTime = millis();
+  }  
   switch(mode) {
     case(MODE_A): 
       LEFT_THRESHOLD = LEFT_THRESHOLD_A;
@@ -158,6 +165,7 @@ void loop() {
         else {
               camGo = 0;
               refreshCount = 0;
+              lastTime = millis();
               isDone = 'Y';
               Serial.println("==== DONE ====");
         }

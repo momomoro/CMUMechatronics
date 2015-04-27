@@ -23,36 +23,40 @@ const char PIECE_B = 'B';
 const char PIECE_C = 'C';
 const char PIECE_D = 'D';
 
-char response[NUM_BYTES+1]; //String array to hold response from slave
-char query[NUM_BYTES+1]; //String array to send query to slave
+char response[NUM_BYTES + 1]; //String array to hold response from slave
+char query[NUM_BYTES + 1]; //String array to send query to slave
 char mode = PIECE_A;
 
 int state;
 int switch1 = 6;
 int switch2 = 7; /* needs to be adjusted */
 int count = 0;
+int donePin = A0;
 
 void setup() {
-  pinMode(switch1,INPUT);
-  pinMode(switch2,INPUT);
+  pinMode(switch1, INPUT);
+  pinMode(switch2, INPUT);
+  pinMode(donePin, OUTPUT);
   Wire.begin();  //Start I2c bus
   startUp();
   count = 0;
   Serial.begin(9600);
   state = START;
+  digitalWrite(donePin, LOW);
+  Serial.println("Starting..");
 }
 
 
 void loop() {
-  switch(state) {
+  switch (state) {
     case IDENTIFY:
       Serial.println("In Camera");
       char cameraMSG[1];
       cameraMSG[0] = mode;
-      SendQuery(CAMERAMODULE,cameraMSG);
+      SendQuery(CAMERAMODULE, cameraMSG);
       delay(500);
-      while(response[0] != 'Y') {
-        Recieve(CAMERAMODULE,NUM_BYTES);
+      while (response[0] != 'Y') {
+        Recieve(CAMERAMODULE, NUM_BYTES);
       }
       state = ORIENT;
       query[0] = 'C';
@@ -61,81 +65,82 @@ void loop() {
     case ORIENT:
       Serial.println("ORient");
       Serial.println(query);
-      SendQuery(ORIENTATOR,query);
+      SendQuery(ORIENTATOR, query);
       delay(1000);
-      Recieve(ORIENTATOR,NUM_BYTES);
-      if(response[0] == 'Y') {
+      Recieve(ORIENTATOR, NUM_BYTES);
+      if (response[0] == 'Y') {
         state = APPLY_FLUX;
       }
       break;
     case APPLY_FLUX:
-      SendQuery(PIECEPLACE,"Move to Flux");
-      while(response[0] != 'Y') {
-        Recieve(PIECEPLACE,NUM_BYTES);
+      SendQuery(PIECEPLACE, "Move to Flux");
+      while (response[0] != 'Y') {
+        Recieve(PIECEPLACE, NUM_BYTES);
       }
-      SendQuery(FLUX,"F");
-      while(response[0] != 'Y') {
-        Recieve(FLUX,NUM_BYTES);
+      SendQuery(FLUX, "F");
+      while (response[0] != 'Y') {
+        Recieve(FLUX, NUM_BYTES);
       }
       state = APPLY_WIRE;
       break;
     case APPLY_WIRE:
       Serial.println("WireAPP");
-      SendQuery(PIECEPLACE,"Move to Wire");
-      while(response[0] != 'Y') {
-        Recieve(PIECEPLACE,NUM_BYTES);
+      SendQuery(PIECEPLACE, "Move to Wire");
+      while (response[0] != 'Y') {
+        Recieve(PIECEPLACE, NUM_BYTES);
       }
-      SendQuery(WIREAPP,"W");
-      while(response[0] != 'Y') {
-        Recieve(WIREAPP,NUM_BYTES);
+      SendQuery(WIREAPP, "W");
+      while (response[0] != 'Y') {
+        Recieve(WIREAPP, NUM_BYTES);
       }
       state = MOVE_PART;
       break;
-   case MOVE_PART:
+    case MOVE_PART:
       Serial.println("Place");
-      SendQuery(PIECEPLACE,"Move Part");
-      while(response[0] != 'Y') {
-        Recieve(PIECEPLACE,NUM_BYTES);
+      SendQuery(PIECEPLACE, "Move Part");
+      while (response[0] != 'Y') {
+        Recieve(PIECEPLACE, NUM_BYTES);
       }
       count = count + 1;
       Serial.print("Count: ");
       Serial.println(count);
-      if(count >= 20) {
+      if (count >= 20) {
         state = DONE;
       }
       else {
         state = START;
       }
       break;
-   case START:
+    case START:
       Serial.println("Beginning process");
-      SendQuery(ORIENTATOR,"R");
-      while(response[0] != 'Y') {
-        Recieve(ORIENTATOR,NUM_BYTES);
+      SendQuery(ORIENTATOR, "R");
+      while (response[0] != 'Y') {
+        Recieve(ORIENTATOR, NUM_BYTES);
         Serial.println("Response is : ");
         Serial.println(response);
       }
       state = IDENTIFY;
       break;
-   case DONE:
-     Serial.println("Done.");
-     break;
-   default:
-     SendQuery(ORIENTATOR,"Hello");
-     break;
-  }  
+    case DONE:
+      Serial.println("Done.");
+      digitalWrite(donePin, HIGH);
+      break;
+    default:
+      SendQuery(ORIENTATOR, "Hello");
+      break;
+  }
 }
 
 /* function to send data to certain device,
 device : device number to send message to (set up in that devices code
-message : message to send to device 
+message : message to send to device
 */
 
 void startUp() {
   bool switch1Val = digitalRead(switch1);
   bool switch2Val = digitalRead(switch2);
-  
-  if(switch1Val && switch2Val) {
+
+  if (switch1Val && switch2Val) {
     mode = PIECE_D;
   }
   else if (switch1Val && !switch2Val) {
@@ -147,13 +152,13 @@ void startUp() {
   else {
     mode = PIECE_A;
   }
-  
+
   char setupMsg[2];
   setupMsg[0] = 'S';
   setupMsg[1] = mode;
-  
-  SendQuery(WIREAPP,setupMsg);
-  SendQuery(PIECEPLACE,setupMsg);
+
+  SendQuery(WIREAPP, setupMsg);
+  SendQuery(PIECEPLACE, setupMsg);
 }
 
 void SendQuery(int device, char message[]) {
@@ -174,9 +179,9 @@ return value is stored in response variable
 */
 
 void Recieve(int device, int numBytes) {
-  Wire.requestFrom(device,NUM_BYTES);
+  Wire.requestFrom(device, NUM_BYTES);
   int i = 0;
-  while(Wire.available()) //slave may send less than requested
+  while (Wire.available()) //slave may send less than requested
   {
     char c = Wire.read();
     Serial.print(c);

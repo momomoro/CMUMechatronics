@@ -8,12 +8,12 @@ const int ORIENT_SERVO_DELAY = 750;
 const int HOPPER_SERVO_DELAY = 600;
 const int HOPPER_SERVO_EXTEND = 90;
 const int HOPPER_SERVO_RETRACT = 180;
-const int ORIENT_SERVO_REST = 97;
+const int ORIENT_SERVO_REST = 89;
 const int ORIENT_SERVO_LEFT = 0;
 const int ORIENT_SERVO_RIGHT = 180;
 const char ORIENT_REQUEST = 'C';
 const char READY_QUERY = 'R';
-const int WAIT_THRESHOLD = 1000; //ms
+const int WAIT_THRESHOLD = 2000; //ms
 
 //query
 
@@ -77,7 +77,7 @@ void loop() {
       hopperLatch = 0;
       int servoLast = millis();
       int servoTime = millis() - servoLast;
-      while(servoTime < HOPPER_SERVO_DELAY) {
+      while (servoTime < HOPPER_SERVO_DELAY) {
         //read pin
         if (analogRead(hopperGatePin) < GATE_THRESHOLD) {
           Serial.println("PIECE GOTTEN");
@@ -90,7 +90,7 @@ void loop() {
       }
       servoLast = millis();
       servoTime = millis() - servoLast;
-      while(servoTime < HOPPER_SERVO_DELAY) {
+      while (servoTime < HOPPER_SERVO_DELAY) {
         //read pin
         if (analogRead(hopperGatePin) < GATE_THRESHOLD) {
           Serial.println("PIECE GOTTEN");
@@ -106,7 +106,7 @@ void loop() {
       int ogateval = analogRead(orientGatePin);
       Serial.print("Orient Gate: ");
       Serial.println(ogateval);
-      if(ogateval < GATE_THRESHOLD) {
+      if (ogateval < GATE_THRESHOLD) {
         Serial.print("Seen Gate: ");
         Serial.println(ogateval);
         Serial.println("Piece received by Orientator!");
@@ -118,7 +118,7 @@ void loop() {
     else {
       hopperLatch = 1;
     }
-    
+
     if (hopperLatch) {
       Serial.println("Hopper Piece Seen");
       hopperDispatchTime = millis();
@@ -160,6 +160,7 @@ void loop() {
       delay(HOPPER_SERVO_DELAY);
       hopper_servo.write(HOPPER_SERVO_RETRACT);
       delay(HOPPER_SERVO_DELAY);
+      hopperDispatchTime = millis();
     }
   }
 
@@ -177,8 +178,11 @@ void loop() {
       orient_servo.write(ORIENT_SERVO_RIGHT);
       delay(ORIENT_SERVO_DELAY);
     }
-    moduleDone = 'Y';
-    orientGo = 0;
+    int ogateVal = analogRead(orientGatePin);
+    if (ogateVal >= GATE_THRESHOLD) {
+      moduleDone = 'Y';
+      orientGo = 0;
+    }
   }
   else {
     orient_servo.write(ORIENT_SERVO_REST);

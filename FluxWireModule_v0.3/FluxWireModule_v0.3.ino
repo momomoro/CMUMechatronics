@@ -3,7 +3,7 @@
 
 #define STEPS 200
 #define GATE_THRESHOLD 200
-#define FLUX_STEP 40
+#define FLUX_STEP -15
 #define WIRE_FULL 800
 #define WIRE_HALF 400
 
@@ -71,10 +71,15 @@ void loop()  {
   //apply flux
 
   if(fluxReady) {
+    //fluxStepper.step(40);
     fluxStepper.step(FLUX_STEP);
+    //delay(100);
+    //fluxStepper.step(-40);
     fluxReady = 0;
     moduleDone = 'Y';
     Serial.println("Flux Done");
+    //delay(2000);
+    //wireReady = 1;
   }
   //apply wire
   if(wireReady) {
@@ -87,9 +92,9 @@ void loop()  {
       delay(100);
       wireStepper.step(-WIRE_FULL);
       delay(100);
-      wireStepper.step(WIRE_HALF);
-      delay(100);
       wireStepper.step(-WIRE_HALF);
+      delay(100);
+      wireStepper.step(WIRE_HALF);
       delay(100);
     }
     wireReady = 0;

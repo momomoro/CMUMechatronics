@@ -12,9 +12,9 @@
 #include <Pixy.h>
 
 Pixy pixy;
-const int numReadings = 10;
-const int LEFT_THRESHOLD = 49;
-const int RIGHT_THRESHOLD = 41;
+const int numReadings = 4;
+const int LEFT_THRESHOLD = 31;
+const int RIGHT_THRESHOLD = 31;
 
 int greenAverage = 0;
 int greenReadings[numReadings];
