@@ -72,24 +72,24 @@ void loop()
 
 
 void placePart() {
-  for (int i = 0; i < 10; i++) {
+  for (int i = 0; i < 5; i++) {
     Serial.println("Waiting");
-    for (int j = 0; j < 2; j++) {
+    for (int j = 0; j < 4; j++) {
       wait();
-      Serial.println("At gate");
+      //Serial.println("At gate");
       /*while (digitalRead(gateSensor) == LOW) {
         Serial.print(analogRead(gateSensor));
         Serial.println("Waiting for gate");
       }*/
       delay(1000);
-      Serial.println("past gate");
+      //Serial.println("past gate");
       align();
       //arm.step(950); //get aligned with wire & flux
-      Serial.println("Waiting");
+      //Serial.println("Waiting");
       //wait();
       //delay(1000);
       //move offset
-      tray.step(-TRAYSTEP * i); //I don't think we want this
+      //tray.step(-TRAYSTEP * i); //I don't think we want this
 
       moveToFlux();
       wait();
@@ -101,12 +101,13 @@ void placePart() {
       moveToArm();
       delay(500);
       //tray return offset
-      int pieceStep = ARMEND - j * 20;
-      arm.step(pieceStep); //need to play with this number
-      //move arm back to home
-      arm.step(-pieceStep);
+      int pieceStep = 50 + j * 20; //need to play with this number
+      arm.step(-pieceStep); //drag piece back
+      int columnStep = 400 - i * 30; //Move tray with arm in place, holding piece where it is
+      tray.step(columnStep); //Piece will hit arm and be dragged
+      tray.step(-columnStep);  //Piece is free to move back
       moveArmToHome();
-      tray.step(TRAYSTEP * i);
+      //tray.step(TRAYSTEP * i); unneeded with the traystep at 92
       
       response = 'Y';
     }
